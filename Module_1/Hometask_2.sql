@@ -41,7 +41,7 @@ WITH first_query AS(
 			a.TABLE_SCHEMA AS Schema_name,
 			a.TABLE_NAME AS Table_name,
 			b.COLUMN_NAME AS Column_name,
-			b.DATA_TYPE AS Data_type,
+			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type,
 			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type_raw
 			FROM ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[TABLES] a
 			JOIN ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[COLUMNS] b 
@@ -53,7 +53,7 @@ WITH first_query AS(
 			a.TABLE_SCHEMA AS Schema_name,
 			a.TABLE_NAME AS Table_name,
 			b.COLUMN_NAME AS Column_name,
-			b.DATA_TYPE AS Data_type,
+			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type,
 			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type_raw
 			FROM ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[TABLES] a
 			JOIN ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[COLUMNS] b 
@@ -137,7 +137,7 @@ FROM @result_1),
 	(
 		SELECT
 			CASE
-				WHEN [lead_row] IS NOT NULL AND [Data_type] IN ('char', 'varchar', 'text', 'nchar', 'nvarchar', 'ntext', 'binary', 'varbinary') 
+				WHEN [lead_row] IS NOT NULL AND [Data_type] LIKE 'char%' OR [Data_type] LIKE 'varchar%' OR [Data_type] LIKE 'text%' OR [Data_type] LIKE 'nchar%' OR [Data_type] LIKE 'nvarchar%' OR [Data_type] LIKE 'ntext%' OR [Data_type] LIKE 'binary%' OR [Data_type] LIKE 'varbinary%' 
 				THEN 'SELECT 
 						'''+[Table_name]+''', 
 						'''+[Column_name]+''',
@@ -161,7 +161,7 @@ FROM @result_1),
 				
 				
 				
-				WHEN [lead_row] IS NULL AND [Data_type] IN ('char', 'varchar', 'text', 'nchar', 'nvarchar', 'ntext', 'binary', 'varbinary') 
+				WHEN [lead_row] IS NULL AND [Data_type] LIKE 'char%' OR [Data_type] LIKE 'varchar%' OR [Data_type] LIKE 'text%' OR [Data_type] LIKE 'nchar%' OR [Data_type] LIKE 'nvarchar%' OR [Data_type] LIKE 'ntext%' OR [Data_type] LIKE 'binary%' OR [Data_type] LIKE 'varbinary%' 
 				THEN 'SELECT 
 						'''+[Table_name]+''', 
 						'''+[Column_name]+''',
@@ -239,4 +239,3 @@ END
 
 -- execution of storded procedure
 --EXEC Analyzer 'TRN', 'hr', '%'
-
