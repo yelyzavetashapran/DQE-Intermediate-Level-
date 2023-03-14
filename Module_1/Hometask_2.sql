@@ -1,4 +1,3 @@
-
 CREATE PROCEDURE Analyzer (@p_DatabaseName NVARCHAR(30), @p_SchemaName NVARCHAR(30), @p_TableName NVARCHAR(30))
 AS
 BEGIN
@@ -41,8 +40,14 @@ WITH first_query AS(
 			a.TABLE_SCHEMA AS Schema_name,
 			a.TABLE_NAME AS Table_name,
 			b.COLUMN_NAME AS Column_name,
-			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type,
-			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type_raw
+			CASE 
+				WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')''
+				WHEN b.NUMERIC_PRECISION IS NOT NULL AND b.NUMERIC_SCALE != 0 THEN b.DATA_TYPE + ''('' + CAST(b.NUMERIC_PRECISION AS varchar) + '','' + CAST(b.NUMERIC_SCALE AS varchar) + '')'' 
+				ELSE b.DATA_TYPE END AS Data_type,
+			CASE 
+				WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')''
+				WHEN b.NUMERIC_PRECISION IS NOT NULL AND b.NUMERIC_SCALE != 0 THEN b.DATA_TYPE + ''('' + CAST(b.NUMERIC_PRECISION AS varchar) + '','' + CAST(b.NUMERIC_SCALE AS varchar) + '')''
+				ELSE b.DATA_TYPE END AS Data_type_raw
 			FROM ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[TABLES] a
 			JOIN ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[COLUMNS] b 
 			ON a.TABLE_CATALOG = b.TABLE_CATALOG and a.TABLE_SCHEMA=b.TABLE_SCHEMA and a.TABLE_NAME = b.TABLE_NAME
@@ -53,8 +58,14 @@ WITH first_query AS(
 			a.TABLE_SCHEMA AS Schema_name,
 			a.TABLE_NAME AS Table_name,
 			b.COLUMN_NAME AS Column_name,
-			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type,
-			CASE WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')'' ELSE b.DATA_TYPE END AS Data_type_raw
+			CASE 
+				WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')''
+				WHEN b.NUMERIC_PRECISION IS NOT NULL AND b.NUMERIC_SCALE != 0 THEN b.DATA_TYPE + ''('' + CAST(b.NUMERIC_PRECISION AS varchar) + '','' + CAST(b.NUMERIC_SCALE AS varchar) + '')'' 
+				ELSE b.DATA_TYPE END AS Data_type,
+			CASE 
+				WHEN b.CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN b.DATA_TYPE + ''('' + CAST(b.CHARACTER_MAXIMUM_LENGTH AS varchar) + '')''
+				WHEN b.NUMERIC_PRECISION IS NOT NULL AND b.NUMERIC_SCALE != 0 THEN b.DATA_TYPE + ''('' + CAST(b.NUMERIC_PRECISION AS varchar) + '','' + CAST(b.NUMERIC_SCALE AS varchar) + '')''
+				ELSE b.DATA_TYPE END AS Data_type_raw
 			FROM ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[TABLES] a
 			JOIN ['+@p_DatabaseName+'].[INFORMATION_SCHEMA].[COLUMNS] b 
 			ON a.TABLE_CATALOG = b.TABLE_CATALOG and a.TABLE_SCHEMA=b.TABLE_SCHEMA and a.TABLE_NAME = b.TABLE_NAME
@@ -147,7 +158,7 @@ FROM @result_1),
 						CAST((SELECT COUNT(*) FROM '+[path]+'  WHERE  '+[Column_name]+'  LIKE ''%[A-Z]%'' AND '+[Column_name]+' = UPPER('+[Column_name]+') collate SQL_Latin1_General_CP1_CS_AS) AS VARCHAR(100)),
 						CAST((SELECT COUNT(*) FROM '+[path]+'  WHERE '+[Column_name]+'  LIKE ''%[A-Z]%'' AND '+[Column_name]+' = LOWER('+[Column_name]+') collate SQL_Latin1_General_CP1_CS_AS) AS VARCHAR(100))
 					FROM '+[path]+' UNION ALL '
-				WHEN [lead_row] IS NOT NULL AND [Data_type] IN ('tinyint', 'smallint', 'int', 'bigint', 'decimal', 'numeric', 'smallmoney', 'money', 'float', 'real') 
+				WHEN [lead_row] IS NOT NULL AND [Data_type] LIKE 'tinyint%' OR [Data_type] LIKE 'smallint%' OR [Data_type] LIKE 'int%' OR [Data_type] LIKE 'bigint%' OR [Data_type] LIKE 'decimal%' OR [Data_type] LIKE 'numeric%' OR [Data_type] LIKE 'smallmoney%' OR [Data_type] LIKE 'money%' OR [Data_type] LIKE 'float%' OR [Data_type] LIKE 'real%'
 				THEN 'SELECT 
 						'''+[Table_name]+''', 
 						'''+[Column_name]+''',
@@ -171,7 +182,7 @@ FROM @result_1),
 						CAST((SELECT COUNT(' + [Column_name] + ') FROM '+[path]+'  WHERE '+[Column_name]+'  LIKE ''%[A-Z]%'' AND  '+[Column_name]+' = upper('+[Column_name]+') collate SQL_Latin1_General_CP1_CS_AS) AS VARCHAR(100)),
 						CAST((SELECT COUNT(*) FROM '+[path]+' WHERE '+[Column_name]+'  LIKE ''%[A-Z]%'' AND '+[Column_name]+' = LOWER('+[Column_name]+') collate SQL_Latin1_General_CP1_CS_AS) AS VARCHAR(100))
 					FROM '+[path]+' '
-				WHEN [lead_row] IS NULL AND [Data_type] IN ('tinyint', 'smallint', 'int', 'bigint', 'decimal', 'numeric', 'smallmoney', 'money', 'float', 'real') 
+				WHEN [lead_row] IS NULL AND [Data_type] LIKE 'tinyint%' OR [Data_type] LIKE 'smallint%' OR [Data_type] LIKE 'int%' OR [Data_type] LIKE 'bigint%' OR [Data_type] LIKE 'decimal%' OR [Data_type] LIKE 'numeric%' OR [Data_type] LIKE 'smallmoney%' OR [Data_type] LIKE 'money%' OR [Data_type] LIKE 'float%' OR [Data_type] LIKE 'real%' 
 				THEN 'SELECT 
 						'''+[Table_name]+''', 
 						'''+[Column_name]+''',
